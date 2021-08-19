@@ -131,6 +131,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Reindex multiply indices into one')
     parser.add_argument('-s', '--src', help='source indices (index-*, index-0, index-1)', required=True)
     parser.add_argument('-d', '--dest', help='destination index (new_index_1)', required=True)
+    parser.add_argument('-u', '--user', help='Username', required=True)
+    parser.add_argument('-p', '--password', help='Password', required=True)
     parser.add_argument('--url', help='Elasticsearch url https://localhost:9200', required=True)
     parser.add_argument('--delete', help='delete source indices', action='store_true',required=False)
     parser.add_argument('--dry-run', help='dry run', action='store_true', required=False)
@@ -141,10 +143,13 @@ if __name__ == '__main__':
     delete_old = args.delete
     url = args.url
     dry_run = args.dry_run
+    user = args.user
+    password = args.password
+
 
     log.debug("Source: {}, Destination: {}, Delete old: {}, URL: {}".format(index_src, index_dest, delete_old, url))
 
-    es_client = EsClient(es_url=url, log=log)
+    es_client = EsClient(es_url=url, log=log,user=user,password=password)
     es_api = es_client.get_api()
     app = App(
         src=index_src,
