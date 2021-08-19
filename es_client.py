@@ -15,7 +15,7 @@ class EsApiCall:
 
 
 class EsClient:
-    def __init__(self, log, es_url: str, user: str = None, password: str =None):
+    def __init__(self, log, es_url: str, user: str = None, password: str = None):
         self._es_url = es_url
         self._chek_connection()
         self._session = Session()
@@ -23,6 +23,8 @@ class EsClient:
         self._user = user
         self._password = password
 
+        if self._user:
+            self._session.auth = (self._user, self._password)
     def _chek_connection(self):
         pass
 
@@ -38,8 +40,7 @@ class EsClient:
         if 'data' in param:
             headers['content-type'] = 'application/json'
             _request.data = json.dumps(param['data'])
-        if self._user:
-            _request.auth(self._user, self._password)
+
         prepped = _request.prepare()
         resp = self._session.send(prepped, verify=False)
 

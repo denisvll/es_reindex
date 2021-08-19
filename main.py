@@ -145,11 +145,11 @@ if __name__ == '__main__':
     dry_run = args.dry_run
     user = args.user
     password = args.password
-
+    print(password)
 
     log.debug("Source: {}, Destination: {}, Delete old: {}, URL: {}".format(index_src, index_dest, delete_old, url))
 
-    es_client = EsClient(es_url=url, log=log,user=user,password=password)
+    es_client = EsClient(es_url=url, log=log, user=user, password=password)
     es_api = es_client.get_api()
     app = App(
         src=index_src,
