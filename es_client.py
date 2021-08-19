@@ -23,10 +23,6 @@ class EsClient:
         self._user = user
         self._password = password
 
-        if self._user:
-            log.debug("set user pass {}/***".format(self._user))
-            self._session.auth = (self._user, self._password)
-
     def _chek_connection(self):
         pass
 
@@ -42,6 +38,10 @@ class EsClient:
         if 'data' in param:
             headers['content-type'] = 'application/json'
             _request.data = json.dumps(param['data'])
+
+        if self._user:
+            self.log.debug("set user pass {}/***".format(self._user))
+            _request.auth = (self._user, self._password)
 
         prepped = _request.prepare()
         resp = self._session.send(prepped, verify=False)
