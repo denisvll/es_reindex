@@ -24,7 +24,9 @@ class EsClient:
         self._password = password
 
         if self._user:
+            log.debug("set user pass {}/***".format(self._user))
             self._session.auth = (self._user, self._password)
+
     def _chek_connection(self):
         pass
 
