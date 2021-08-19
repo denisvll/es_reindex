@@ -57,7 +57,7 @@ class App():
         for index in idx_list:
             stat, code = self.elastic_api.get(path="/{}/_stats".format(index))
             logging.debug(stat['_all']['total']['store'])
-            total_size += stat['_all']['total']['store']['total_data_set_size_in_bytes']
+            total_size += stat['_all']['total']['store']['size_in_bytes']
 
         return total_size
 
