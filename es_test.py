@@ -34,7 +34,7 @@ def main():
     es_client = EsClient(es_url=url, log=log)
     es_api = es_client.get_api()
 
-    indices = es_api.get(path="/_cat/indices")
+    indices, code = es_api.get(path="/_cat/indices")
 
     #
     compact = []
@@ -56,7 +56,7 @@ def main():
     # all_docs = get_all_docs(es_api, "optimized-000001")
     # logging.info(len(all_docs))
     # es_api.delete(path="/test_index-*")
-    # fill_up(es_api)
+    fill_up(es_api)
 
 def get_all_docs(es_api,index):
     cmd = {
@@ -65,7 +65,7 @@ def get_all_docs(es_api,index):
         }
     }
     all_docs = []
-    docs = es_api.post(path="/{}/_search?scroll=1m".format(index), data=cmd)
+    docs, code = es_api.post(path="/{}/_search?scroll=1m".format(index), data=cmd)
     scroll_id = docs['_scroll_id']
     logging.debug(docs['_scroll_id'])
     for doc in docs['hits']['hits']:
@@ -74,7 +74,7 @@ def get_all_docs(es_api,index):
 
     while docs['hits']['hits']:
         cmd={ "scroll" : "1m", "scroll_id" : scroll_id }
-        docs = es_api.post(path="/_search/scroll", data=cmd)
+        docs, code  = es_api.post(path="/_search/scroll", data=cmd)
         scroll_id = docs['_scroll_id']
 
         logging.debug(docs['_scroll_id'])

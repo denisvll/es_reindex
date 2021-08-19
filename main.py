@@ -19,11 +19,12 @@ log.addHandler(stdout_handler)
 
 
 class App():
-    def __init__(self, src: list, dest: str, rm_old: bool, elastic_api: EsApiCall):
+    def __init__(self, src: list, dest: str, rm_old: bool, dry_run: bool, elastic_api: EsApiCall):
         self.src = src
         self.dest = dest
         self.rm_old = rm_old
         self.elastic_api = es_api
+        self.dry_run = dry_run
 
     def run(self):
         self._get_indices()
@@ -100,7 +101,7 @@ class App():
         log.info('Start optimize')
         total_size = self.sizeof_fmt(self._get_inices_size(self.src_idx_list))
         log.info("Size of source indices: {}".format(total_size))
-        self._setup_new_index(self.src_idx_list[0])
+
         cmd = {
             "source": {
                 "index": self.src_idx_list
@@ -109,13 +110,21 @@ class App():
                 "index": self.dest
             }
         }
-        self.elastic_api.post(path="/_reindex", data=cmd)
-        time.sleep(10)
-        new_size = self.sizeof_fmt(self._get_inices_size([self.dest]))
-        log.info("Optimize complete, new size: {}".format(new_size))
-        if self.rm_old:
-            log.info("delete old indices")
-            self._delete(self.src_idx_list)
+
+        if not dry_run:
+            self._setup_new_index(self.src_idx_list[0])
+
+
+            self.elastic_api.post(path="/_reindex", data=cmd)
+            time.sleep(10)
+            new_size = self.sizeof_fmt(self._get_inices_size([self.dest]))
+            log.info("Optimize complete, new size: {}".format(new_size))
+            if self.rm_old:
+                log.info("delete old indices")
+                self._delete(self.src_idx_list)
+        else:
+            log.info("DRY RUN")
+            log.info(cmd)
 
 
 if __name__ == '__main__':
@@ -124,12 +133,14 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dest', help='destination index (new_index_1)', required=True)
     parser.add_argument('--url', help='Elasticsearch url https://localhost:9200', required=True)
     parser.add_argument('--delete', help='delete source indices', action='store_true',required=False)
+    parser.add_argument('--dry-run', help='dry run', action='store_true', required=False)
 
     args = parser.parse_args()
     index_src = args.src.split(',')
     index_dest = args.dest
     delete_old = args.delete
     url = args.url
+    dry_run = args.dry_run
 
     log.debug("Source: {}, Destination: {}, Delete old: {}, URL: {}".format(index_src, index_dest, delete_old, url))
 
@@ -139,6 +150,7 @@ if __name__ == '__main__':
         src=index_src,
         dest=index_dest,
         rm_old=delete_old,
+        dry_run=dry_run,
         elastic_api=es_api
     )
     app.run()
