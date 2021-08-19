@@ -114,11 +114,7 @@ class App():
         if not dry_run:
             self._setup_new_index(self.src_idx_list[0])
 
-
-            self.elastic_api.post(path="/_reindex", data=cmd)
-            time.sleep(10)
-            new_size = self.sizeof_fmt(self._get_inices_size([self.dest]))
-            log.info("Optimize complete, new size: {}".format(new_size))
+            self.elastic_api.post(path="/_reindex?slices=20&wait_for_completion=false", data=cmd)
             if self.rm_old:
                 log.info("delete old indices")
                 self._delete(self.src_idx_list)
