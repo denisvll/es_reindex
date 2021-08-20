@@ -113,9 +113,9 @@ class App():
         }
 
         if self.no_wait:
-            query = "/_reindex?slices=5"
-        else:
             query = "/_reindex?slices=5&wait_for_completion=false"
+        else:
+            query = "/_reindex?slices=5"
 
         if not self.dry_run:
             self._setup_new_index(self.src_idx_list[0])
