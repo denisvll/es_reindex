@@ -142,7 +142,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--password', help='Password', required=True)
     parser.add_argument('--url', help='Elasticsearch url https://localhost:9200', required=True)
     parser.add_argument('--no-wait', help='don\'t wait until indices will be reindex', action='store_true', required=False)
-    parser.add_argument('--slices', help='num of parallel operation (default: 5)', action='store_true', required=False)
+    parser.add_argument('--slices', help='num of parallel operation (default: 5)', type=int, default=5, required=False)
     parser.add_argument('--delete', help='delete source indices', action='store_true',required=False)
     parser.add_argument('--dry-run', help='dry run', action='store_true', required=False)
 
@@ -155,10 +155,7 @@ if __name__ == '__main__':
     user = args.user
     password = args.password
     no_wait = args.no_wait
-    if args.slices:
-        slices = int(args.slices)
-    else:
-        slices = 5
+    slices = args.slices
 
     if no_wait and delete_old:
         log.error("Unable to use no-wait and delete simultaneously ")
