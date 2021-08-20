@@ -120,7 +120,11 @@ class App():
         if not self.dry_run:
             self._setup_new_index(self.src_idx_list[0])
 
-            self.elastic_api.post(path=query, data=cmd)
+            response, response_code = self.elastic_api.post(path=query, data=cmd)
+            log.debug(response)
+            if response_code != 200:
+                log.error("Something goes wrong, exiting")
+                sys.exit(1)
             if self.rm_old:
                 log.info("delete old indices")
                 self._delete(self.src_idx_list)
