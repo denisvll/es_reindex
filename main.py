@@ -19,12 +19,13 @@ log.addHandler(stdout_handler)
 
 
 class App():
-    def __init__(self, src: list, dest: str, rm_old: bool, dry_run: bool, elastic_api: EsApiCall):
+    def __init__(self, src: list, dest: str, rm_old: bool, dry_run: bool, no_wait: bool, elastic_api: EsApiCall):
         self.src = src
         self.dest = dest
         self.rm_old = rm_old
         self.elastic_api = es_api
         self.dry_run = dry_run
+        self.no_wait = no_wait
 
     def run(self):
         self._get_indices()
@@ -111,10 +112,15 @@ class App():
             }
         }
 
-        if not dry_run:
+        if self.no_wait:
+            query = "/_reindex?slices=20"
+        else:
+            query = "/_reindex?slices=20&wait_for_completion=false"
+
+        if not self.dry_run:
             self._setup_new_index(self.src_idx_list[0])
 
-            self.elastic_api.post(path="/_reindex?slices=20&wait_for_completion=false", data=cmd)
+            self.elastic_api.post(path=query, data=cmd)
             if self.rm_old:
                 log.info("delete old indices")
                 self._delete(self.src_idx_list)
@@ -130,6 +136,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--user', help='Username', required=True)
     parser.add_argument('-p', '--password', help='Password', required=True)
     parser.add_argument('--url', help='Elasticsearch url https://localhost:9200', required=True)
+    parser.add_argument('--no-wait', help='don\'t wait until indices will be reindex', action='store_true', required=False)
     parser.add_argument('--delete', help='delete source indices', action='store_true',required=False)
     parser.add_argument('--dry-run', help='dry run', action='store_true', required=False)
 
@@ -141,7 +148,11 @@ if __name__ == '__main__':
     dry_run = args.dry_run
     user = args.user
     password = args.password
-    print(password)
+    no_wait = args.no_wait
+
+    if no_wait and delete_old:
+        log.error("Unable use no-wait and delete simultaneously ")
+        sys.exit(1)
 
     log.debug("Source: {}, Destination: {}, Delete old: {}, URL: {}".format(index_src, index_dest, delete_old, url))
 
@@ -151,6 +162,7 @@ if __name__ == '__main__':
         src=index_src,
         dest=index_dest,
         rm_old=delete_old,
+        no_wait=no_wait,
         dry_run=dry_run,
         elastic_api=es_api
     )
