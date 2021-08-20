@@ -74,7 +74,7 @@ class App():
     def _setup_new_index(self, mapping_source):
         if not self._is_index_exist(self.dest):
             primary_shard = 1
-            replica = 1
+            replica = 0
             mapping, code = self.elastic_api.get(path="/{}/_mapping".format(mapping_source))
             mapping = mapping[mapping_source]['mappings']
             settings = {
